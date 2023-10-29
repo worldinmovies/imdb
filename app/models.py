@@ -29,8 +29,8 @@ class Movie(models.Model):
     def add_fetched_info(self, fetched_movie):
         self.fetched = True
         self.budget = fetched_movie['budget']
-        self.imdb_id = fetched_movie['imdb_id'].strip() if fetched_movie['imdb_id'] and fetched_movie[
-            'imdb_id'].strip() else None
+        self.imdb_id = fetched_movie['imdb_id'].strip() if (fetched_movie['imdb_id'] and
+                                                            fetched_movie['imdb_id'].strip()) else None
         self.original_language = fetched_movie['original_language']
         self.overview = fetched_movie['overview']
         self.poster_path = fetched_movie['poster_path']
@@ -67,12 +67,12 @@ class Movie(models.Model):
         as at a certain point the amount of votes should not affect the result as much
         f(x)= log2(x)
         """
-        vote_count = self.vote_count + self.imdb_vote_count
-        vote_average = (self.vote_average + self.imdb_vote_average) / 2
-        return math.log2(vote_count) * vote_average
+        vote_count = self.vote_count + int(self.imdb_vote_count)
+        vote_average = (decimal.Decimal(self.vote_average) + decimal.Decimal(self.imdb_vote_average)) / 2
+        return decimal.Decimal(math.log2(vote_count)) * vote_average
 
     def __str__(self):
-        return f"id: {self.id}, original_title: {self.original_title}, fetched: {self.fetched}"
+        return "id: %s, original_title: %s, fetched: %s" % (self.id, self.original_title, self.fetched)
 
 
 class Genre(models.Model):
@@ -81,18 +81,18 @@ class Genre(models.Model):
     name = models.TextField()
 
     def __str__(self):
-        return f"id:{self.id}, name:{self.name}"
+        return "id:%s, name:%s" % (self.id, self.name)
 
 
 class AlternativeTitle(models.Model):
     id = models.AutoField(primary_key=True)
     movie = models.ForeignKey(Movie, related_name='alternative_titles', on_delete=models.CASCADE, db_index=True)
     iso_3166_1 = models.CharField(max_length=50)
-    title = models.CharField()
-    type = models.CharField(blank=True, null=True)
+    title = models.TextField()
+    type = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"iso:{self.iso_3166_1}, title:{self.title}"
+        return "iso:%s, title:%s" % (self.iso_3166_1, self.title)
 
 
 class SpokenLanguage(models.Model):
@@ -102,7 +102,7 @@ class SpokenLanguage(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"iso:{self.iso_639_1}, name:{self.name}"
+        return "iso:%s, name:%s" % (self.iso_639_1, self.name)
 
 
 class ProductionCountries(models.Model):
@@ -112,4 +112,4 @@ class ProductionCountries(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"iso:{self.iso_3166_1}, name:{self.name}"
+        return "iso:%s, name:%s" % (self.iso_3166_1, self.name)

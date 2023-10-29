@@ -1,9 +1,13 @@
-import os, responses, io, gzip, time
-import sys
+import gzip
+import io
+import os
+import responses
+import time
 
-from django.test import TransactionTestCase
-from django.db import transaction
+import sys
 from app.models import Movie, SpokenLanguage, ProductionCountries, AlternativeTitle
+from django.db import transaction
+from django.test import TransactionTestCase
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
