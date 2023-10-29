@@ -9,7 +9,7 @@ import simplejson
 from app.importer import import_imdb_ratings, import_imdb_alt_titles
 from app.models import Movie
 from django.db import connection
-from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from fuzzywuzzy import fuzz
 
@@ -106,7 +106,7 @@ def get_best_movies_from_country(request, country_code):
 	            {lang_query}
 	            and movie.vote_count + movie.imdb_vote_count > 200
 	            and ((movie.vote_average + movie.imdb_vote_average) / 2) > 0
-	            order by (movie.vote_count / (cast(movie.vote_count as numeric) + 200)) * movie.vote_average + (200 / (cast(movie.vote_count as numeric) + 200)) * 4 desc
+	            order by (movie.vote_count / (cast(movie.vote_count as numeric) + 200)) * movie.vote_average + (200 / (cast(movie.vote_count as numeric) + 200)) * 4 asc
 	            limit 20
 	            offset {page}
         """)
@@ -192,10 +192,10 @@ def fetch_imdb_ratings(request):
 
 
 def fetch_imdb_titles(request):
-    if 'import_imdb_alt_titles' not in [thread.name for thread in threading.enumerate()]:
-        thread = threading.Thread(target=import_imdb_alt_titles, name='import_imdb_alt_titles')
-        thread.daemon = True
-        thread.start()
+    if 'import_imdb_titles' not in [thread.name for thread in threading.enumerate()]:
+        t = threading.Thread(target=import_imdb_alt_titles, name='import_imdb_titles')
+        t.daemon = False
+        t.start()
         return HttpResponse(json.dumps({"Message": "Starting to process IMDB titles"}))
     else:
         return HttpResponse(json.dumps({"Message": "IMDB titles process already started"}))

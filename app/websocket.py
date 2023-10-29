@@ -20,7 +20,6 @@ class Consumer(AsyncWebsocketConsumer):
         except ConnectionClosedOK:
             print("Client has disconnected from ws. Ignoring")
 
-
     async def connect(self):
         await self.channel_layer.group_add(self.groupId, self.channel_name)
         await self.accept()
@@ -41,6 +40,7 @@ class Consumer(AsyncWebsocketConsumer):
     Triggers on groupsends to type: events
     """
     async def events(self, event):
+        print("SCOPE: %s" % self.scope)
         await self.send_data(event['message'])
 
 

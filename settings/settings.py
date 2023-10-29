@@ -35,7 +35,7 @@ INSTALLED_APPS = [
 
 CRONJOBS = [
     ('0 1 * * *', 'app.importer.import_imdb_ratings', '>> /tmp/scheduled_job.log'),
-    ('0 13 * * *', 'app.importer.import_imdb_alt_titles', '>> /tmp/scheduled_job.log'),
+    ('0 0 * * 1', 'app.importer.import_imdb_alt_titles', '>> /tmp/scheduled_job.log'),
 ]
 
 MIDDLEWARE = [
@@ -57,14 +57,21 @@ ROOT_URLCONF = 'settings.urls'
 ASGI_APPLICATION = 'settings.asgi.application'
 environment = os.getenv('ENVIRONMENT', 'docker')
 redis_url = 'redis' if environment == 'docker' else 'localhost'
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': "channels_redis.core.RedisChannelLayer",
-        'CONFIG': {
-            'hosts': [(redis_url, 6379)],
+if 'test' in sys.argv:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
         }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': "channels_redis.core.RedisChannelLayer",
+            'CONFIG': {
+                'hosts': [(redis_url, 6379)],
+            }
+        }
+    }
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -77,7 +84,7 @@ if 'test' in sys.argv:
             'CONN_MAX_AGE': 500,
         }
     }
-elif environment == 'localhost':
+if environment == 'localhost':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -98,15 +105,6 @@ elif environment == 'docker':
             'PASSWORD': 'postgres',
             'HOST': 'db',
             'PORT': 5432,
-            'CONN_MAX_AGE': 500,
-        }
-    }
-else:
-    PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'worldinmovies.db'),
             'CONN_MAX_AGE': 500,
         }
     }
@@ -140,8 +138,8 @@ if sentryApi:
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production,
-        traces_sample_rate=1.0,
-        profiles_sample_rate=1.0,
+        traces_sample_rate=0.01,
+        profiles_sample_rate=0.01,
     )
 
 LANGUAGE_CODE = 'en-us'
@@ -183,6 +181,20 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'level': 'WARN',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'kafka.coordinator': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'kafka.conn': {
+            'handlers': ['console'],
+            'level': 'ERROR',
             'propagate': True,
         },
     }
