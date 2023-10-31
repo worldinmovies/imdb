@@ -61,6 +61,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=seppaleinen/worldinmovies_imdb,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=registry,ref=seppaleinen/worldinmovies_imdb:latest
+          cache-to: type=inline
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
