@@ -75,7 +75,6 @@ else:
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-print("SYSARGV: %s" % sys.argv)
 if 'test' in sys.argv:
     PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
     DATABASES = {
